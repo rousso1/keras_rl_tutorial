@@ -1,11 +1,9 @@
-
-
 import sys
 import os
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
-tf.logging.set_verbosity(tf.logging.ERROR)
+# tf.logging.set_verbosity(tf.logging.ERROR)
 
 
 import keras
@@ -22,14 +20,13 @@ from keras.utils.vis_utils import model_to_dot
 from keras.models import Sequential, Model
 from keras.layers import *
 from sklearn import datasets
-#Load the training and testing data
+# Load the training and testing data
 from sklearn.utils import shuffle
 
 np.random.seed(1338)
 
 
 def load_cora():
-
     from examples.utils import load_data, get_splits, preprocess_adj_numpy
 
     # Prepare Data
@@ -63,7 +60,6 @@ def load_cora():
 
 
 def load_mutag():
-
     from keras_dgl.layers import MultiGraphCNN
     from examples.utils import load_data, get_splits, preprocess_adj_numpy
 
@@ -72,7 +68,6 @@ def load_mutag():
     orig_num_graph_nodes = A_orig.shape[1]
     orig_num_graphs = int(A_orig.shape[0] / A_orig.shape[1])
 
-
     A_orig = np.split(A_orig, orig_num_graphs, axis=0)
     A_orig = np.array(A_orig)
 
@@ -80,12 +75,11 @@ def load_mutag():
     A = pd.read_csv('keras-deep-graph-learning/examples/data/A_edge_matrices_mutag.csv', header=None)
     A = np.array(A)
 
-
     num_graphs = 188  # hardcoded for mutag dataset
 
     A = np.split(A, num_graphs, axis=0)
     A = np.array(A)
-    num_edge_features = int(A.shape[1]/A.shape[2])
+    num_edge_features = int(A.shape[1] / A.shape[2])
 
     X = pd.read_csv('keras-deep-graph-learning/examples/data/X_mutag.csv', header=None)
     X = np.array(X)
@@ -95,12 +89,12 @@ def load_mutag():
     num_graph_nodes = A.shape[1]
     num_graphs = int(A.shape[0] / A.shape[1])
 
-
     Y = pd.read_csv('keras-deep-graph-learning/examples/data/Y_mutag.csv', header=None)
     Y = np.array(Y)
 
     A, X, Y = shuffle(A, X, Y)
     return A, A_orig, X, Y, num_edge_features, num_graph_nodes, num_graphs, orig_num_graph_nodes, orig_num_graphs
+
 
 def fix_gcn_paths():
     if 'keras-deep-graph-learning' not in os.getcwd(): sys.path.extend([os.path.join(os.getcwd(), 'keras-deep-graph-learning'), os.path.join(os.getcwd(), 'keras-deep-graph-learning/examples'), os.path.join(os.getcwd(), 'keras-deep-graph-learning/examples/data')])
@@ -114,6 +108,7 @@ def translate_metric(x):
         return translations[x]
     else:
         return x
+
 
 class PlotLearning(Callback):
     def on_train_begin(self, logs={}):
@@ -150,14 +145,17 @@ class PlotLearning(Callback):
 
         plt.show()
 
+
 def load_mnist():
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
     img_rows, img_cols = 28, 28
     batch_size = 128
     num_classes = 10
     epochs = 12
-    if K.image_data_format() == 'channels_first': shape_ord = (1, img_rows, img_cols)
-    else:  shape_ord = (img_rows, img_cols, 1)
+    if K.image_data_format() == 'channels_first':
+        shape_ord = (1, img_rows, img_cols)
+    else:
+        shape_ord = (img_rows, img_cols, 1)
     X_train = X_train.reshape((X_train.shape[0],) + shape_ord)
     X_test = X_test.reshape((X_test.shape[0],) + shape_ord)
     X_train = X_train.astype('float32')
@@ -167,6 +165,7 @@ def load_mnist():
     y_train = keras.utils.to_categorical(y_train, num_classes)
     y_test = keras.utils.to_categorical(y_test, num_classes)
     return (X_train, y_train), (X_test, y_test)
+
 
 def show_mnist_teaser():
     (X_train, y_train), (X_test, y_test) = mnist.load_data()
@@ -184,26 +183,25 @@ def show_mnist_teaser():
     plt.close()
 
 
-
-
 def convert_sentence_to_token_mode1(sentence, vocab_path):
     import tokenization
     import numpy as np
     tokenizer = tokenization.FullTokenizer(vocab_file=vocab_path, do_lower_case=False)
-    sentence = sentence.split('[MASK]')             
-    tokens = ['[CLS]']                              
+    sentence = sentence.split('[MASK]')
+    tokens = ['[CLS]']
     for i in range(len(sentence)):
         if i == 0:
-            tokens = tokens + tokenizer.tokenize(sentence[i]) 
+            tokens = tokens + tokenizer.tokenize(sentence[i])
         else:
-            tokens = tokens + ['[MASK]'] + tokenizer.tokenize(sentence[i]) 
-    tokens = tokens + ['[SEP]']                     
-    token_input = tokenizer.convert_tokens_to_ids(tokens)        
+            tokens = tokens + ['[MASK]'] + tokenizer.tokenize(sentence[i])
+    tokens = tokens + ['[SEP]']
+    token_input = tokenizer.convert_tokens_to_ids(tokens)
     token_input = token_input + [0] * (512 - len(token_input))
     return tokens, token_input
 
+
 def create_input_mask_mode1(token_input):
-    mask_input = [0]*512
+    mask_input = [0] * 512
     for i in range(len(mask_input)):
         if token_input[i] == 103:
             mask_input[i] = 1
@@ -211,7 +209,7 @@ def create_input_mask_mode1(token_input):
 
 
 def create_phrase_mask_mode1():
-    seg_input = [0]*512
+    seg_input = [0] * 512
     return np.asarray([seg_input])
 
 
@@ -231,12 +229,11 @@ def create_input_mask_mode2():
 
 
 def create_phrase_mask_mode2(tokens_sen_1, tokens_sen_2):
-    seg_input = [0]*512
-    len_1 = len(tokens_sen_1) + 2              
-    for i in range(len(tokens_sen_2)+1):            
-            seg_input[len_1 + i] = 1 
+    seg_input = [0] * 512
+    len_1 = len(tokens_sen_1) + 2
+    for i in range(len(tokens_sen_2) + 1):
+        seg_input[len_1 + i] = 1
     return np.asarray([seg_input])
-
 
 
 class TimestepDropout(Dropout):
@@ -250,8 +247,6 @@ class TimestepDropout(Dropout):
         return noise_shape
 
 
-
-    
 class SampledSoftmax(Layer):
     def __init__(self, num_classes=50000, num_sampled=1000, tied_to=None, **kwargs):
         super(SampledSoftmax, self).__init__(**kwargs)
@@ -296,8 +291,8 @@ class SampledSoftmax(Layer):
 
     def compute_output_shape(self, input_shape):
         return input_shape[0] if self.sampled else (input_shape[0][0], input_shape[0][1], self.num_classes)
-    
-    
+
+
 import numpy as np
 
 
@@ -306,7 +301,7 @@ class LMDataGenerator(keras.utils.Sequence):
 
     def __len__(self):
         """Denotes the number of batches per epoch"""
-        return int(np.ceil(len(self.indices)/self.batch_size))
+        return int(np.ceil(len(self.indices) / self.batch_size))
 
     def __init__(self, corpus, vocab, sentence_maxlen=100, token_maxlen=50, batch_size=32, shuffle=True, token_encoding='word'):
         """Compiles a Language Model RNN based on the given parameters
@@ -354,7 +349,7 @@ class LMDataGenerator(keras.utils.Sequence):
 
         padding = np.zeros((1,), dtype=np.int32)
 
-        for i, word_seq in enumerate(word_indices_batch ):
+        for i, word_seq in enumerate(word_indices_batch):
             for_word_indices_batch[i] = np.concatenate((word_seq[1:], padding), axis=0)
 
         for_word_indices_batch = for_word_indices_batch[:, :, np.newaxis]
@@ -394,6 +389,7 @@ class LMDataGenerator(keras.utils.Sequence):
 
     def get_token_char_indices(self, sent_id):
         sent_id = int(sent_id)
+
         def convert_token_to_char_ids(token, token_maxlen):
             bos_char = 256  # <begin sentence>
             eos_char = 257  # <end sentence>
@@ -433,7 +429,8 @@ class LMDataGenerator(keras.utils.Sequence):
                     if token_ids[1]:
                         token_ids[j + 2] = convert_token_to_char_ids('<eos>', self.token_maxlen)
         return token_ids
-    
+
+
 parameters = {
     'multi_processing': False,
     'n_threads': 4,
